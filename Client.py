@@ -74,6 +74,7 @@ while message != "exit":
         shell.receive()
 
 
+
     message = input("1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
 
 
