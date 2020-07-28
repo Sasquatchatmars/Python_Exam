@@ -60,7 +60,7 @@ class GetInfo:
 class PortScanner:
 
     def scanner(self):
-        ports_to_scan = {21: "FTP", 22: "SSH", 53: "DNS", 80: "HTTP", 443: "HTTPS", 445: "TEST", 6942: "TEST2"}
+        ports_to_scan = {21: "FTP", 22: "SSH", 53: "DNS", 80: "HTTP", 443: "HTTPS"}
         address = input("Enter the address to scan: ")
         for port in ports_to_scan.keys():
             print("Scanning port: {}".format(port))
@@ -84,7 +84,7 @@ shell = Shell()
 
 print("\n----------------------")
 message = input(
-    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
+    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the PortScanner.\n4. Type exit to quit\n\nAnswer: ")
 print("\n----------------------")
 while message != "exit":
     if message == "1":
@@ -110,7 +110,7 @@ while message != "exit":
 
     print("\n----------------------")
     message = input(
-        "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
+        "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the PortScanner.\n4.Type exit to quit\n\nAnswer: ")
 print("\n----------------------")
 
 s.close()
