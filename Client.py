@@ -142,7 +142,6 @@ def connection(malware_addr):
         print("[!] Unable to connect to the following address: {}".format(malware_addr))
         sys.exit(0)
     print(s.recv(4096).decode('utf-8', errors="ignore"))
-    connection(malware_addr)
 
 
 def run_commands(malware_os):
