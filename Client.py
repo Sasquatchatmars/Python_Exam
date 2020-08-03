@@ -17,12 +17,10 @@ class Shell:
     def send(self):
         self._history.append(self._command)
         self._communication.send(self._command)
-        # s.send(self._command.encode("utf-8"))
+
 
     def receive(self):
         content = self._communication.recv_message_str()
-        # if content[2:] == "cd":
-        #     self._malware_os.chdir(self._command[3:].decode("utf-8", errors="ignore"))
         print(content)
 
     def history(self):
