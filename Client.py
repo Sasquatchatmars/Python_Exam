@@ -18,7 +18,6 @@ class Shell:
         self._history.append(self._command)
         self._communication.send(self._command)
 
-
     def receive(self):
         content = self._communication.recv_message_str()
         print(content)
@@ -51,21 +50,18 @@ class GetInfo:
     def __init__(self, malware_os):
         self._os = malware_os
 
-    # List users
     def get_users(self):
         if self._os == self.OS_LIST[0]:
             return "net users"
         elif self._os == self.OS_LIST[1]:
             return "cut -d: -f1 /etc/passwd"
 
-    # list directory content
     def get_content(self):
         if self._os == self.OS_LIST[0]:
             return "dir"
         elif self._os == self.OS_LIST[1]:
             return "ls"
 
-    # list running Process
     def list_process(self):
         if self._os == self.OS_LIST[0]:
             return "tasklist /FI \"STATUS eq running\""
@@ -98,7 +94,7 @@ class PortScanner:
 
 def set_up_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--address", type=str, help="Enter the IP address to connect to")
+    parser.add_argument("-a", "--address", metavar="", type=str, help="Enter the IP address to connect to")
     parser.add_argument("-p", "--portscanner", action="store_true",
                         help="Specify option to only start the port scanner")
     args = parser.parse_args()
